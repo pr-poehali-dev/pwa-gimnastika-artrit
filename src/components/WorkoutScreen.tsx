@@ -7,9 +7,21 @@ interface Props {
   mode: ExerciseMode;
   exercises: Exercise[];
   progress: Progress;
-  onProgressUpdate: (p: Progress) => void;
+  onProgressUpdate: (p: Progress | ((prev: Progress) => Progress)) => void;
   onFinish: (minutes: number, stopped: boolean) => void;
 }
+
+const MODE_TIPS: Record<Exercise['mode'], string> = {
+  normal: 'Сделай 8–12 раз плавно, без рывков. Дыши свободно.',
+  micro: 'Сделай 6–10 раз с маленькой амплитудой. Если больно — сделай меньше.',
+  vibro: 'Напрягай мышцу на 2 удара метронома (около 5–8 сек), расслабляй на 2 удара. Повтори 5–6 раз.',
+};
+
+// Сколько ударов метронома на подход для каждого режима
+const BEATS_NORMAL = 12;
+const BEATS_MICRO = 10;
+const VIBRO_CYCLES = 6;       // циклов напряжение+отдых
+const VIBRO_BEATS_EACH = 2;   // ударов на каждую фазу
 
 export default function WorkoutScreen({ mode, exercises, progress, onProgressUpdate, onFinish }: Props) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -19,6 +31,11 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
   const [isStopped, setIsStopped] = useState(false);
   const [beatPulse, setBeatPulse] = useState(false);
 
+  // Auto-count state
+  const [beatCount, setBeatCount] = useState(0);       // текущий удар в подходе
+  const [vibroCycle, setVibroCycle] = useState(0);     // текущий цикл вибро
+  const [vibroPhase, setVibroPhase] = useState<'tension' | 'rest'>('tension');
+
   const modeInfo = MODE_INFO[mode];
   const beatInterval = Math.round(60000 / modeInfo.bpm);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -26,10 +43,17 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
   const audioCtxRef = useRef<AudioContext | null>(null);
   const minutesRef = useRef(0);
   const pointsAddedRef = useRef<Set<number>>(new Set());
+  const autoAdvanceRef = useRef(false);
 
   const minutes = Math.floor(seconds / 60);
+  const current = exercises[currentIdx];
+  const exerciseMode = current?.mode ?? 'normal';
 
-  const playClick = useCallback(() => {
+  const totalBeats = exerciseMode === 'normal' ? BEATS_NORMAL
+    : exerciseMode === 'micro' ? BEATS_MICRO
+    : VIBRO_CYCLES * VIBRO_BEATS_EACH * 2;
+
+  const playClick = useCallback((freq = 880) => {
     try {
       if (!audioCtxRef.current) {
         audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
@@ -39,7 +63,7 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = 880;
+      osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.3, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
       osc.start(ctx.currentTime);
@@ -71,26 +95,82 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [onProgressUpdate]);
 
-  // Metronome
+  const goNext = useCallback(() => {
+    setBeatCount(0);
+    setVibroCycle(0);
+    setVibroPhase('tension');
+    setCurrentIdx(i => i + 1);
+  }, []);
+
+  // Metronome + auto-count
   useEffect(() => {
-    if (isMetronomeOn) {
-      metroRef.current = setInterval(() => {
-        playClick();
-        setBeatPulse(true);
-        setTimeout(() => setBeatPulse(false), 200);
-      }, beatInterval);
-    } else {
-      if (metroRef.current) clearInterval(metroRef.current);
-    }
+    if (metroRef.current) clearInterval(metroRef.current);
+    if (!isMetronomeOn) return;
+
+    let localBeat = 0;
+    let localCycle = 0;
+    let localPhase: 'tension' | 'rest' = 'tension';
+    let localPhaseBeat = 0;
+
+    metroRef.current = setInterval(() => {
+      setBeatPulse(true);
+      setTimeout(() => setBeatPulse(false), 200);
+
+      if (exerciseMode === 'vibro') {
+        // вибро: 2 удара напряжение, 2 удара отдых → цикл
+        const isNewPhase = localPhaseBeat === 0;
+        if (isNewPhase) {
+          playClick(localPhase === 'tension' ? 1100 : 660);
+        } else {
+          playClick(880);
+        }
+        localPhaseBeat++;
+        if (localPhaseBeat >= VIBRO_BEATS_EACH) {
+          localPhaseBeat = 0;
+          localPhase = localPhase === 'tension' ? 'rest' : 'tension';
+          if (localPhase === 'tension') {
+            localCycle++;
+            setVibroCycle(localCycle);
+          }
+          setVibroPhase(localPhase);
+        }
+        const totalCycleFull = localCycle + (localPhase === 'tension' && localPhaseBeat === 0 ? 0 : 0);
+        if (localCycle >= VIBRO_CYCLES) {
+          if (!autoAdvanceRef.current) {
+            autoAdvanceRef.current = true;
+            setTimeout(() => { autoAdvanceRef.current = false; goNext(); }, 400);
+          }
+        }
+      } else {
+        playClick(880);
+        localBeat++;
+        setBeatCount(localBeat);
+        const limit = exerciseMode === 'normal' ? BEATS_NORMAL : BEATS_MICRO;
+        if (localBeat >= limit) {
+          localBeat = 0;
+          if (!autoAdvanceRef.current) {
+            autoAdvanceRef.current = true;
+            setTimeout(() => { autoAdvanceRef.current = false; goNext(); }, 400);
+          }
+        }
+      }
+    }, beatInterval);
+
     return () => { if (metroRef.current) clearInterval(metroRef.current); };
-  }, [isMetronomeOn, beatInterval, playClick]);
+  }, [isMetronomeOn, beatInterval, playClick, exerciseMode, goNext]);
+
+  // Сброс счёта при смене упражнения
+  useEffect(() => {
+    setBeatCount(0);
+    setVibroCycle(0);
+    setVibroPhase('tension');
+  }, [currentIdx]);
 
   const handleStop = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (metroRef.current) clearInterval(metroRef.current);
     setIsStopped(true);
     setShowBadge(true);
-    // Add badge
     onProgressUpdate(prev => ({
       ...prev,
       badges: prev.badges.includes('Слышу себя') ? prev.badges : [...prev.badges, 'Слышу себя'],
@@ -106,14 +186,16 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
     onFinish(minutes, false);
   };
 
-  const current = exercises[currentIdx];
+  const handleSkip = () => {
+    goNext();
+  };
 
   if (!current) return (
     <div className="flex flex-col items-center justify-center h-full p-6 text-center">
       <div className="text-6xl mb-4">🎉</div>
       <div className="text-2xl font-bold mb-2">Тренировка завершена!</div>
       <div className="text-gray-500 mb-6">Отличная работа!</div>
-      <button onClick={handleFinish} className="btn-primary px-8 py-4 rounded-2xl text-white font-bold text-lg" style={{ background: '#f97316' }}>На главную</button>
+      <button onClick={handleFinish} className="px-8 py-4 rounded-2xl text-white font-bold text-lg" style={{ background: '#f97316' }}>На главную</button>
     </div>
   );
 
@@ -126,7 +208,17 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
     </div>
   );
 
-  const exerciseModeLabel = current.mode === 'normal' ? 'Обычный' : current.mode === 'micro' ? 'Микро' : 'Вибро';
+  const exerciseModeLabel = exerciseMode === 'normal' ? 'Обычный' : exerciseMode === 'micro' ? 'Микро' : 'Вибро';
+  const tip = MODE_TIPS[exerciseMode];
+
+  // Прогресс-бар повторений
+  const repProgress = exerciseMode === 'vibro'
+    ? Math.min(vibroCycle / VIBRO_CYCLES, 1)
+    : Math.min(beatCount / (exerciseMode === 'normal' ? BEATS_NORMAL : BEATS_MICRO), 1);
+
+  const repLabel = exerciseMode === 'vibro'
+    ? `${vibroCycle} / ${VIBRO_CYCLES} циклов · ${vibroPhase === 'tension' ? 'Напряжение' : 'Отдых'}`
+    : `${beatCount} / ${exerciseMode === 'normal' ? BEATS_NORMAL : BEATS_MICRO} повторений`;
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'hsl(var(--background))' }}>
@@ -160,19 +252,40 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
       </div>
 
       {/* Main exercise card */}
-      <div className="flex-1 overflow-auto px-4 py-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-auto px-4 py-4 flex flex-col gap-3">
         <div className="rounded-3xl p-6 shadow-sm border" style={{ background: 'white', borderColor: '#f3f4f6' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: '#fff7ed', color: '#f97316' }}>{exerciseModeLabel}</span>
             <span className="text-xs text-gray-400">{current.zoneName}</span>
           </div>
           <h2 className="text-2xl font-black mb-3" style={{ color: '#1a1a1a' }}>{current.name}</h2>
-          <p className="text-gray-600 text-base leading-relaxed mb-4">{current.description}</p>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: '#f0fdf4' }}>
+          <p className="text-gray-600 text-base leading-relaxed mb-3">{current.description}</p>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#f0fdf4' }}>
             <Icon name="RefreshCw" size={16} style={{ color: '#22c55e' }} />
             <span className="font-semibold text-sm" style={{ color: '#16a34a' }}>{current.reps}</span>
           </div>
+          {/* Tip */}
+          <div className="flex items-start gap-2 px-3 py-2 rounded-xl" style={{ background: '#fafafa', borderLeft: '3px solid #f97316' }}>
+            <Icon name="Info" size={14} className="mt-0.5 shrink-0" style={{ color: '#f97316' }} />
+            <span className="text-xs text-gray-500 leading-snug">{tip}</span>
+          </div>
         </div>
+
+        {/* Rep progress bar (shown when metronome is on) */}
+        {isMetronomeOn && (
+          <div className="rounded-2xl px-5 py-4 shadow-sm border" style={{ background: 'white', borderColor: '#f3f4f6' }}>
+            <div className="flex justify-between text-xs text-gray-400 mb-2">
+              <span>Авто-счёт</span>
+              <span>{repLabel}</span>
+            </div>
+            <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: '#e5e7eb' }}>
+              <div
+                className="h-full rounded-full transition-all duration-150"
+                style={{ width: `${repProgress * 100}%`, background: repProgress >= 1 ? '#22c55e' : '#f97316' }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Metronome */}
         <div className="rounded-3xl p-5 shadow-sm border flex flex-col items-center gap-3" style={{ background: 'white', borderColor: '#f3f4f6' }}>
@@ -194,47 +307,34 @@ export default function WorkoutScreen({ mode, exercises, progress, onProgressUpd
             style={{
               background: isMetronomeOn ? '#fff7ed' : '#f97316',
               color: isMetronomeOn ? '#f97316' : 'white',
-              border: isMetronomeOn ? '2px solid #f97316' : '2px solid #f97316',
             }}
           >
-            {isMetronomeOn ? '⏸ Метроном вкл.' : '▶ Метроном'}
+            {isMetronomeOn ? 'Выключить метроном' : 'Включить метроном'}
           </button>
-          <div className="text-xs text-gray-400">{modeInfo.bpm} уд/мин</div>
+          {isMetronomeOn && (
+            <div className="text-xs text-gray-400">
+              {modeInfo.bpm} уд/мин · упражнение сменится автоматически
+            </div>
+          )}
         </div>
 
-        {/* Navigation */}
-        <div className="flex gap-3">
+        {/* Actions */}
+        <div className="flex gap-3 pb-4">
           <button
-            onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
-            disabled={currentIdx === 0}
-            className="flex-1 py-4 rounded-2xl font-bold text-base transition-all active:scale-95 disabled:opacity-40"
+            onClick={handleSkip}
+            className="flex-1 py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
             style={{ background: '#f3f4f6', color: '#6b7280' }}
           >
-            ← Назад
+            Пропустить
           </button>
           <button
-            onClick={() => {
-              if (currentIdx < exercises.length - 1) setCurrentIdx(i => i + 1);
-              else handleFinish();
-            }}
-            className="flex-1 py-4 rounded-2xl font-bold text-base transition-all active:scale-95 text-white"
-            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}
+            onClick={handleStop}
+            className="flex-1 py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
+            style={{ background: '#fee2e2', color: '#dc2626' }}
           >
-            {currentIdx < exercises.length - 1 ? 'Вперёд →' : '✓ Готово'}
+            Стоп, больно
           </button>
         </div>
-      </div>
-
-      {/* Stop button */}
-      <div className="px-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-        <button
-          onClick={handleStop}
-          disabled={isStopped}
-          className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
-          style={{ background: '#F5E6E0', color: '#C75C4A', border: '2px solid #f8c4b9' }}
-        >
-          🛑 Стоп, больно
-        </button>
       </div>
     </div>
   );
