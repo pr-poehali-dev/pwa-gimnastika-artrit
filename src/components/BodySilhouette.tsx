@@ -22,8 +22,8 @@ const STROKE_COLORS: Record<string, string> = {
 };
 
 // Neutral body colors
-const BODY_FILL = '#c8bfb0';
-const BODY_STROKE = '#a89880';
+const BODY_FILL = '#e8e0d6';
+const BODY_STROKE = '#c4b8a8';
 const BODY_STROKE_W = 1;
 
 export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
