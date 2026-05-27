@@ -70,103 +70,107 @@ export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
       <rect x="89" y="52" width="22" height="20" rx="5" {...zoneProps('neck')}>
         <title>Шея</title>
       </rect>
-      <text x="100" y="65" textAnchor="middle" fontSize="5" fill="#1a1a1a" pointerEvents="none">Шея</text>
+      <text x="100" y="65" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Ш</text>
 
       {/* LEFT SHOULDER */}
       <ellipse cx="60" cy="84" rx="13" ry="10" {...zoneProps('shoulder_left')}>
         <title>Левое плечо</title>
       </ellipse>
-      <text x="60" y="87" textAnchor="middle" fontSize="4.2" fill="#1a1a1a" pointerEvents="none">Плечо Л</text>
+      <text x="60" y="88" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
 
       {/* RIGHT SHOULDER */}
       <ellipse cx="140" cy="84" rx="13" ry="10" {...zoneProps('shoulder_right')}>
         <title>Правое плечо</title>
       </ellipse>
-      <text x="140" y="87" textAnchor="middle" fontSize="4.2" fill="#1a1a1a" pointerEvents="none">Плечо П</text>
+      <text x="140" y="88" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
 
       {/* UPPER BACK */}
       <rect x="78" y="80" width="44" height="28" rx="5" {...zoneProps('upper_back')}>
         <title>Верх спины</title>
       </rect>
-      <text x="100" y="97" textAnchor="middle" fontSize="4.5" fill="#1a1a1a" pointerEvents="none">Верх спины</text>
+      <text x="100" y="98" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">В·С</text>
 
       {/* LOWER BACK */}
       <rect x="78" y="113" width="44" height="25" rx="5" {...zoneProps('lower_back')}>
         <title>Поясница</title>
       </rect>
-      <text x="100" y="129" textAnchor="middle" fontSize="4.5" fill="#1a1a1a" pointerEvents="none">Поясница</text>
+      <text x="100" y="130" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·С</text>
 
       {/* LEFT ELBOW */}
       <ellipse cx="51" cy="138" rx="10" ry="8" {...zoneProps('elbow_left')}>
         <title>Левый локоть</title>
       </ellipse>
-      <text x="51" y="141" textAnchor="middle" fontSize="4" fill="#1a1a1a" pointerEvents="none">Локоть Л</text>
+      <text x="51" y="142" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Л·Л</text>
 
       {/* RIGHT ELBOW */}
       <ellipse cx="149" cy="138" rx="10" ry="8" {...zoneProps('elbow_right')}>
         <title>Правый локоть</title>
       </ellipse>
-      <text x="149" y="141" textAnchor="middle" fontSize="4" fill="#1a1a1a" pointerEvents="none">Локоть П</text>
+      <text x="149" y="142" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Л·П</text>
 
       {/* LEFT WRIST */}
-      <ellipse cx="51" cy="165" rx="9" ry="7" {...zoneProps('wrist_left')}>
+      <ellipse cx="51" cy="162" rx="9" ry="7" {...zoneProps('wrist_left')}>
         <title>Левая кисть</title>
       </ellipse>
-      <text x="51" y="168" textAnchor="middle" fontSize="4" fill="#1a1a1a" pointerEvents="none">Кисть Л</text>
+      <text x="51" y="166" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·Л</text>
 
       {/* RIGHT WRIST */}
-      <ellipse cx="149" cy="165" rx="9" ry="7" {...zoneProps('wrist_right')}>
+      <ellipse cx="149" cy="162" rx="9" ry="7" {...zoneProps('wrist_right')}>
         <title>Правая кисть</title>
       </ellipse>
-      <text x="149" y="168" textAnchor="middle" fontSize="4" fill="#1a1a1a" pointerEvents="none">Кисть П</text>
+      <text x="149" y="166" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·П</text>
 
-      {/* FINGERS HANDS */}
-      <rect x="75" y="143" width="50" height="18" rx="5" {...zoneProps('fingers_hand')}>
-        <title>Пальцы рук</title>
-      </rect>
-      <text x="100" y="155" textAnchor="middle" fontSize="4.2" fill="#1a1a1a" pointerEvents="none">Пальцы рук</text>
+      {/* FINGERS HANDS — под кистями, на концах предплечий */}
+      <ellipse cx="51" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand')}>
+        <title>Пальцы рук (левые)</title>
+      </ellipse>
+      <ellipse cx="149" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand')}>
+        <title>Пальцы рук (правые)</title>
+      </ellipse>
+      <text x="51" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Р</text>
+      <text x="149" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Р</text>
 
       {/* LEFT HIP */}
-      <ellipse cx="80" cy="183" rx="12" ry="10" {...zoneProps('hip_left')}>
+      <ellipse cx="80" cy="200" rx="12" ry="10" {...zoneProps('hip_left')}>
         <title>Левый тазобедренный</title>
       </ellipse>
-      <text x="80" y="186" textAnchor="middle" fontSize="3.8" fill="#1a1a1a" pointerEvents="none">Таз Л</text>
+      <text x="80" y="204" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Т·Л</text>
 
       {/* RIGHT HIP */}
-      <ellipse cx="120" cy="183" rx="12" ry="10" {...zoneProps('hip_right')}>
+      <ellipse cx="120" cy="200" rx="12" ry="10" {...zoneProps('hip_right')}>
         <title>Правый тазобедренный</title>
       </ellipse>
-      <text x="120" y="186" textAnchor="middle" fontSize="3.8" fill="#1a1a1a" pointerEvents="none">Таз П</text>
+      <text x="120" y="204" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Т·П</text>
 
       {/* LEFT KNEE */}
-      <ellipse cx="82" cy="245" rx="12" ry="10" {...zoneProps('knee_left')}>
+      <ellipse cx="82" cy="252" rx="12" ry="10" {...zoneProps('knee_left')}>
         <title>Левое колено</title>
       </ellipse>
-      <text x="82" y="248" textAnchor="middle" fontSize="3.8" fill="#1a1a1a" pointerEvents="none">Колено Л</text>
+      <text x="82" y="256" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·Л</text>
 
       {/* RIGHT KNEE */}
-      <ellipse cx="116" cy="245" rx="12" ry="10" {...zoneProps('knee_right')}>
+      <ellipse cx="116" cy="252" rx="12" ry="10" {...zoneProps('knee_right')}>
         <title>Правое колено</title>
       </ellipse>
-      <text x="116" y="248" textAnchor="middle" fontSize="3.8" fill="#1a1a1a" pointerEvents="none">Колено П</text>
+      <text x="116" y="256" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·П</text>
 
       {/* LEFT ANKLE */}
       <ellipse cx="82" cy="296" rx="11" ry="8" {...zoneProps('ankle_left')}>
         <title>Левый голеностоп</title>
       </ellipse>
-      <text x="82" y="299" textAnchor="middle" fontSize="3.5" fill="#1a1a1a" pointerEvents="none">Голено Л</text>
+      <text x="82" y="300" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Г·Л</text>
 
       {/* RIGHT ANKLE */}
       <ellipse cx="116" cy="296" rx="11" ry="8" {...zoneProps('ankle_right')}>
         <title>Правый голеностоп</title>
       </ellipse>
-      <text x="116" y="299" textAnchor="middle" fontSize="3.5" fill="#1a1a1a" pointerEvents="none">Голено П</text>
+      <text x="116" y="300" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Г·П</text>
 
       {/* FINGERS FEET */}
       <rect x="72" y="313" width="56" height="15" rx="5" {...zoneProps('fingers_foot')}>
         <title>Пальцы ног</title>
       </rect>
-      <text x="100" y="323" textAnchor="middle" fontSize="4" fill="#1a1a1a" pointerEvents="none">Пальцы ног</text>
+      <text x="100" y="323" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Н</text>
     </svg>
   );
 }
