@@ -91,10 +91,10 @@ export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
       <text x="100" y="98" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">В·С</text>
 
       {/* LOWER BACK */}
-      <rect x="78" y="113" width="44" height="25" rx="5" {...zoneProps('lower_back')}>
+      <rect x="78" y="128" width="44" height="25" rx="5" {...zoneProps('lower_back')}>
         <title>Поясница</title>
       </rect>
-      <text x="100" y="130" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·С</text>
+      <text x="100" y="144" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·С</text>
 
       {/* LEFT ELBOW */}
       <ellipse cx="51" cy="138" rx="10" ry="8" {...zoneProps('elbow_left')}>
@@ -120,15 +120,17 @@ export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
       </ellipse>
       <text x="149" y="166" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·П</text>
 
-      {/* FINGERS HANDS — под кистями, на концах предплечий */}
-      <ellipse cx="51" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand')}>
-        <title>Пальцы рук (левые)</title>
+      {/* FINGERS HAND LEFT — под левой кистью */}
+      <ellipse cx="51" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand_left')}>
+        <title>Пальцы левой руки</title>
       </ellipse>
-      <ellipse cx="149" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand')}>
-        <title>Пальцы рук (правые)</title>
+      <text x="51" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
+
+      {/* FINGERS HAND RIGHT — под правой кистью */}
+      <ellipse cx="149" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand_right')}>
+        <title>Пальцы правой руки</title>
       </ellipse>
-      <text x="51" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Р</text>
-      <text x="149" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Р</text>
+      <text x="149" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
 
       {/* LEFT HIP */}
       <ellipse cx="80" cy="200" rx="12" ry="10" {...zoneProps('hip_left')}>
@@ -166,11 +168,17 @@ export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
       </ellipse>
       <text x="116" y="300" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Г·П</text>
 
-      {/* FINGERS FEET */}
-      <rect x="72" y="313" width="56" height="15" rx="5" {...zoneProps('fingers_foot')}>
-        <title>Пальцы ног</title>
-      </rect>
-      <text x="100" y="323" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Н</text>
+      {/* FINGERS FOOT LEFT — на левой стопе */}
+      <ellipse cx="84" cy="318" rx="12" ry="7" {...zoneProps('fingers_foot_left')}>
+        <title>Пальцы левой ноги</title>
+      </ellipse>
+      <text x="84" y="321" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
+
+      {/* FINGERS FOOT RIGHT — на правой стопе */}
+      <ellipse cx="116" cy="318" rx="12" ry="7" {...zoneProps('fingers_foot_right')}>
+        <title>Пальцы правой ноги</title>
+      </ellipse>
+      <text x="116" y="321" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
     </svg>
   );
 }
