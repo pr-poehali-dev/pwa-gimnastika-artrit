@@ -1,4 +1,6 @@
-import { ZoneState, getZoneColor } from '@/data/gymData';
+import { ZoneState, getZoneColor, ZONES } from '@/data/gymData';
+
+const ZONE_NAME: Record<string, string> = Object.fromEntries(ZONES.map(z => [z.id, z.name]));
 
 interface Props {
   zoneStates: Record<string, ZoneState>;
@@ -6,18 +8,23 @@ interface Props {
 }
 
 const ZONE_COLORS: Record<string, string> = {
-  default: '#d1fae5',
+  default: 'rgba(180,200,185,0.45)',
   green: '#4ade80',
   yellow: '#facc15',
   red: '#f87171',
 };
 
 const STROKE_COLORS: Record<string, string> = {
-  default: '#6ee7b7',
+  default: 'rgba(100,160,120,0.5)',
   green: '#16a34a',
   yellow: '#ca8a04',
   red: '#dc2626',
 };
+
+// Neutral body colors
+const BODY_FILL = '#c8bfb0';
+const BODY_STROKE = '#a89880';
+const BODY_STROKE_W = 1;
 
 export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
   const getColor = (zoneId: string) => {
@@ -25,160 +32,130 @@ export default function BodySilhouette({ zoneStates, onZoneClick }: Props) {
     return getZoneColor(state);
   };
 
-  const fill = (id: string) => ZONE_COLORS[getColor(id)];
-  const stroke = (id: string) => STROKE_COLORS[getColor(id)];
+  const circleFill = (id: string) => ZONE_COLORS[getColor(id)];
+  const circleStroke = (id: string) => STROKE_COLORS[getColor(id)];
 
-  const zoneProps = (id: string) => ({
-    fill: fill(id),
-    stroke: stroke(id),
-    strokeWidth: 1.5,
-    onClick: () => onZoneClick(id),
-    style: { cursor: 'pointer', transition: 'fill 0.3s ease' },
-    className: 'hover:opacity-80',
-  });
+  const dot = (id: string, cx: number, cy: number, r = 9) => (
+    <circle
+      key={id}
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill={circleFill(id)}
+      stroke={circleStroke(id)}
+      strokeWidth={getColor(id) === 'default' ? 1 : 2}
+      onClick={() => onZoneClick(id)}
+      style={{ cursor: 'pointer', transition: 'fill 0.25s ease, r 0.15s ease' }}
+      className="hover:opacity-75 active:opacity-90"
+    >
+      <title>{ZONE_NAME[id] ?? id}</title>
+    </circle>
+  );
 
   return (
-    <svg viewBox="0 0 200 420" className="w-full max-w-[220px] mx-auto drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
-      {/* Body outline - skin color */}
-      <ellipse cx="100" cy="32" rx="18" ry="20" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+    <svg
+      viewBox="0 0 200 430"
+      className="w-full max-w-[210px] mx-auto"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* ── BODY SHAPE ── */}
+
+      {/* Head */}
+      <ellipse cx="100" cy="28" rx="19" ry="22"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
+      {/* Neck */}
+      <rect x="92" y="48" width="16" height="16" rx="4"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
       {/* Torso */}
-      <rect x="72" y="75" width="56" height="90" rx="8" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <rect x="70" y="63" width="60" height="100" rx="10"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
       {/* Left upper arm */}
-      <rect x="48" y="76" width="22" height="55" rx="8" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
-      {/* Right upper arm */}
-      <rect x="130" y="76" width="22" height="55" rx="8" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <rect x="46" y="65" width="22" height="58" rx="10"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
       {/* Left lower arm */}
-      <rect x="42" y="134" width="18" height="48" rx="7" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <rect x="40" y="126" width="18" height="52" rx="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+      {/* Left hand */}
+      <ellipse cx="49" cy="185" rx="10" ry="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
+      {/* Right upper arm */}
+      <rect x="132" y="65" width="22" height="58" rx="10"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
       {/* Right lower arm */}
-      <rect x="140" y="134" width="18" height="48" rx="7" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
-      {/* Left leg upper */}
-      <rect x="72" y="168" width="24" height="68" rx="8" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
-      {/* Right leg upper */}
-      <rect x="104" y="168" width="24" height="68" rx="8" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
-      {/* Left leg lower */}
-      <rect x="73" y="240" width="22" height="64" rx="7" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
-      {/* Right leg lower */}
-      <rect x="105" y="240" width="22" height="64" rx="7" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <rect x="142" y="126" width="18" height="52" rx="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+      {/* Right hand */}
+      <ellipse cx="151" cy="185" rx="10" ry="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
+      {/* Pelvis */}
+      <rect x="70" y="163" width="60" height="22" rx="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
+      {/* Left thigh */}
+      <rect x="70" y="183" width="26" height="68" rx="10"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+      {/* Left shin */}
+      <rect x="72" y="253" width="22" height="62" rx="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
       {/* Left foot */}
-      <ellipse cx="84" cy="311" rx="14" ry="9" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <ellipse cx="83" cy="322" rx="15" ry="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+
+      {/* Right thigh */}
+      <rect x="104" y="183" width="26" height="68" rx="10"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
+      {/* Right shin */}
+      <rect x="106" y="253" width="22" height="62" rx="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
       {/* Right foot */}
-      <ellipse cx="116" cy="311" rx="14" ry="9" fill="#fde68a" stroke="#d97706" strokeWidth="1" />
+      <ellipse cx="117" cy="322" rx="15" ry="8"
+        fill={BODY_FILL} stroke={BODY_STROKE} strokeWidth={BODY_STROKE_W} />
 
-      {/* === CLICKABLE ZONES === */}
+      {/* ── ZONE DOTS ── */}
 
-      {/* NECK */}
-      <rect x="89" y="52" width="22" height="20" rx="5" {...zoneProps('neck')}>
-        <title>Шея</title>
-      </rect>
-      <text x="100" y="65" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Ш</text>
+      {/* Neck */}
+      {dot('neck', 100, 57, 8)}
 
-      {/* LEFT SHOULDER */}
-      <ellipse cx="60" cy="84" rx="13" ry="10" {...zoneProps('shoulder_left')}>
-        <title>Левое плечо</title>
-      </ellipse>
-      <text x="60" y="88" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
+      {/* Shoulders */}
+      {dot('shoulder_left', 52, 76, 10)}
+      {dot('shoulder_right', 148, 76, 10)}
 
-      {/* RIGHT SHOULDER */}
-      <ellipse cx="140" cy="84" rx="13" ry="10" {...zoneProps('shoulder_right')}>
-        <title>Правое плечо</title>
-      </ellipse>
-      <text x="140" y="88" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
+      {/* Upper / lower back — on torso */}
+      {dot('upper_back', 100, 88, 12)}
+      {dot('lower_back', 100, 128, 12)}
 
-      {/* UPPER BACK */}
-      <rect x="78" y="80" width="44" height="28" rx="5" {...zoneProps('upper_back')}>
-        <title>Верх спины</title>
-      </rect>
-      <text x="100" y="98" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">В·С</text>
+      {/* Elbows */}
+      {dot('elbow_left', 49, 133, 9)}
+      {dot('elbow_right', 151, 133, 9)}
 
-      {/* LOWER BACK */}
-      <rect x="78" y="128" width="44" height="25" rx="5" {...zoneProps('lower_back')}>
-        <title>Поясница</title>
-      </rect>
-      <text x="100" y="144" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·С</text>
+      {/* Wrists */}
+      {dot('wrist_left', 49, 165, 8)}
+      {dot('wrist_right', 151, 165, 8)}
 
-      {/* LEFT ELBOW */}
-      <ellipse cx="51" cy="138" rx="10" ry="8" {...zoneProps('elbow_left')}>
-        <title>Левый локоть</title>
-      </ellipse>
-      <text x="51" y="142" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Л·Л</text>
+      {/* Fingers hands */}
+      {dot('fingers_hand_left', 44, 187, 7)}
+      {dot('fingers_hand_right', 156, 187, 7)}
 
-      {/* RIGHT ELBOW */}
-      <ellipse cx="149" cy="138" rx="10" ry="8" {...zoneProps('elbow_right')}>
-        <title>Правый локоть</title>
-      </ellipse>
-      <text x="149" y="142" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Л·П</text>
+      {/* Hips */}
+      {dot('hip_left', 80, 190, 10)}
+      {dot('hip_right', 120, 190, 10)}
 
-      {/* LEFT WRIST */}
-      <ellipse cx="51" cy="162" rx="9" ry="7" {...zoneProps('wrist_left')}>
-        <title>Левая кисть</title>
-      </ellipse>
-      <text x="51" y="166" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·Л</text>
+      {/* Knees */}
+      {dot('knee_left', 83, 258, 10)}
+      {dot('knee_right', 117, 258, 10)}
 
-      {/* RIGHT WRIST */}
-      <ellipse cx="149" cy="162" rx="9" ry="7" {...zoneProps('wrist_right')}>
-        <title>Правая кисть</title>
-      </ellipse>
-      <text x="149" y="166" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·П</text>
+      {/* Ankles */}
+      {dot('ankle_left', 83, 306, 9)}
+      {dot('ankle_right', 117, 306, 9)}
 
-      {/* FINGERS HAND LEFT — под левой кистью */}
-      <ellipse cx="51" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand_left')}>
-        <title>Пальцы левой руки</title>
-      </ellipse>
-      <text x="51" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
-
-      {/* FINGERS HAND RIGHT — под правой кистью */}
-      <ellipse cx="149" cy="183" rx="9" ry="7" {...zoneProps('fingers_hand_right')}>
-        <title>Пальцы правой руки</title>
-      </ellipse>
-      <text x="149" y="187" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
-
-      {/* LEFT HIP */}
-      <ellipse cx="80" cy="200" rx="12" ry="10" {...zoneProps('hip_left')}>
-        <title>Левый тазобедренный</title>
-      </ellipse>
-      <text x="80" y="204" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Т·Л</text>
-
-      {/* RIGHT HIP */}
-      <ellipse cx="120" cy="200" rx="12" ry="10" {...zoneProps('hip_right')}>
-        <title>Правый тазобедренный</title>
-      </ellipse>
-      <text x="120" y="204" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Т·П</text>
-
-      {/* LEFT KNEE */}
-      <ellipse cx="82" cy="252" rx="12" ry="10" {...zoneProps('knee_left')}>
-        <title>Левое колено</title>
-      </ellipse>
-      <text x="82" y="256" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·Л</text>
-
-      {/* RIGHT KNEE */}
-      <ellipse cx="116" cy="252" rx="12" ry="10" {...zoneProps('knee_right')}>
-        <title>Правое колено</title>
-      </ellipse>
-      <text x="116" y="256" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">К·П</text>
-
-      {/* LEFT ANKLE */}
-      <ellipse cx="82" cy="296" rx="11" ry="8" {...zoneProps('ankle_left')}>
-        <title>Левый голеностоп</title>
-      </ellipse>
-      <text x="82" y="300" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Г·Л</text>
-
-      {/* RIGHT ANKLE */}
-      <ellipse cx="116" cy="296" rx="11" ry="8" {...zoneProps('ankle_right')}>
-        <title>Правый голеностоп</title>
-      </ellipse>
-      <text x="116" y="300" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">Г·П</text>
-
-      {/* FINGERS FOOT LEFT — на левой стопе */}
-      <ellipse cx="84" cy="318" rx="12" ry="7" {...zoneProps('fingers_foot_left')}>
-        <title>Пальцы левой ноги</title>
-      </ellipse>
-      <text x="84" y="321" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·Л</text>
-
-      {/* FINGERS FOOT RIGHT — на правой стопе */}
-      <ellipse cx="116" cy="318" rx="12" ry="7" {...zoneProps('fingers_foot_right')}>
-        <title>Пальцы правой ноги</title>
-      </ellipse>
-      <text x="116" y="321" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#1a1a1a" pointerEvents="none">П·П</text>
+      {/* Fingers feet */}
+      {dot('fingers_foot_left', 78, 325, 7)}
+      {dot('fingers_foot_right', 122, 325, 7)}
     </svg>
   );
 }
